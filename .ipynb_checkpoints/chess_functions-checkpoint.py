@@ -190,16 +190,13 @@ def players_ga(number):
                 a=0
                 for y in x.find_all('td'):
                     a+=1
-        if a==17 :
-            for (k,x) in enumerate(soup.find_all('td')) :
-                if x.has_attr("class") and x["class"][0]=="papi_l" :
-                    res.append(x.string)
-        elif a==18:
+        if a==18:
             col='rien'
             for (k,x) in enumerate(soup.find_all('td')) :
                 if x.has_attr("class") and x["class"][0]=="papi_l" and k==19 :
                     col = x.string
-            if col=='Cu.' or col=="Bu." or col == "Perf" or col=="NV":
+                    
+            if col=='Cu.' or col=="Bu." or col == "Perf" or col =="NV" or col=='Ko.' or col=='Me.' or col=='Tr.':
                 for (k,x) in enumerate(soup.find_all('td')) :
                     if x.has_attr("class") and x["class"][0]=="papi_l" and (k-23)%a==0:
                         res.append(x.string)
@@ -208,22 +205,29 @@ def players_ga(number):
                 for (k,x) in enumerate(soup.find_all('td')) :
                     if x.has_attr("class") and x["class"][0]=="papi_l" :
                         res.append(x.string)
-
+                    
         
         elif a==20:
             for (k,x) in enumerate(soup.find_all('td')) :
                 if x.has_attr("class") and x["class"][0]=="papi_l" :
                     indice = k
+                
                     break
             for (k,x) in enumerate(soup.find_all('td')) :
                 if x.has_attr("class") and x["class"][0]=="papi_l" and (k-(a+indice))%a==0 :
                     res.append(x.string)
-                
+               
+    
         else :
             for (k,x) in enumerate(soup.find_all('td')) :
-                if x.has_attr("class") and x["class"][0]=="papi_l" and (k-23)%a==0:
+                if x.has_attr("class") and x["class"][0]=="papi_l" and (k-(5+a))%a==0:
                     res.append(x.string)
-                  
+              
+            if res==[]:
+                for (k,x) in enumerate(soup.find_all('td')) :
+                    if x.has_attr("class") and x["class"][0]=="papi_l" :
+                        res.append(x.string)
+                 
         res = res[1:]
         indicateur = 2
                      
