@@ -147,7 +147,7 @@ def is_in_period(debut, fin, date): #renvoie True quand on est bien dans cette p
         elif int(mois_fin)==int(fin.month):
             if int(jour_fin)>int(fin.day):
                 return False
-    elif int(année_debut)==int(debut.year):
+    elif int(annee_debut)==int(debut.year):
         if int(mois_debut)<int(debut.month):
             return False
         elif int(mois_debut)==int(debut.month):
@@ -351,7 +351,6 @@ def insere_ga(number, con):
         
     #inserer les joueurs du tournoi
     players, ind = players_ga(number)
-    print(players)
     for player in players:
         p = player.lower()
         recherche = list(con.execute("select name from player where name = ?", (p,)))
