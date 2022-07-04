@@ -21,7 +21,34 @@ Les tournois sont tous affiliés à un Id sur le site. Pour parcourir tous les t
 Il y a deux types de grilles en échec : les grilles américaines (http://www.echecs.asso.fr/Resultats.aspx?URL=Tournois/Id/53714/53714&Action=Ga), et les grilles berger (http://www.echecs.asso.fr/Resultats.aspxURL=Tournois/Id/55214/55214&Action=Berger).
 Nous avons créé des fonctions permettant de lire et récupérer les informations de la page html pour les deux types de tournoi.
 
-Nous nous sommes ensuite demandés comment stocker toutes les informations collectées sur le site. Nous voulions d'abord les organiser sous la forme d'un grand dictionnaire Python, puis sous la forme d'un fichier csv, mais les données que nous avions à stocker (joueurs, noms des tournois, dates des tournois, rencontres entre joueurs, couleurs jouées, gagnant de chaque rencontre, elos) étaient trop complexes. Nous avons finalement opté pour une base de donnée SQL avec 3 tables : la table player, la table tournois, et la table match. 
+
+
+
+
+Nous nous sommes ensuite demandés comment stocker toutes les informations collectées sur le site. 
+Nous voulions d'abord les organiser sous la forme d'un grand dictionnaire Python, puis sous la forme d'un fichier csv, mais les données que nous avions à stocker (joueurs, noms des tournois, dates des tournois, rencontres entre joueurs, couleurs jouées, gagnant de chaque rencontre, elos) étaient trop complexes. 
+
+
+Nous avons finalement opté pour une base de donnée SQL avec 3 tables : la table player, la table tournois, et la table match. 
+
+La table player contient les colonnes : id (int), name (str)
+
+La table tournois contient les colonnes : id (int), name (str), date (str), rondes(int), cadence (str), type (berger ou américain)(str)
+
+La table match contient les colonnes : id (int), tournoi (int), black_player (int), elo_black (str), white_player (int), elo_white (int), winner (int)
+
+
+Note :  l'id de la table tournoi correspond exactement à l'id du site, ce qui facilite l'update.
+
+Note : pour la colonne winner de match : 
+- 0 pour victoire des noirs
+- 3 pour victoire des noirs si l'adversaire n'est pas venu
+- 1 pour victoire des  blancs
+- 4 pour victoire des blancs si l'adversaire n'est pas venu, 
+- 2 pour ex aequo
+
+
+
 
 Nous avons ensuite réglé les problèmes liés à la lecture des très anciens matchs, car il n'y avait pas encore de standardisation de la présentation des grilles. 
 
