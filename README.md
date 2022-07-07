@@ -62,12 +62,24 @@ Nous avons ensuite essayé de créer une page html pouvant faire office d'interf
 # Document utilisateur 
 
 <!-- #region -->
+Les bibliothèques Python utilisées sont :
+- sqlite3
+- requests
+- bs4 (BeautifulSoup)
+- datetime
+- matplotlib
+- panda
+- numpy
+
 Le fichier *chess_functions.py* regroupe toutes les fonctions nécessaire à l'extraction d'informations des pages du site. S'y trouvent aussi les fonctions test sur les dates des tournois, et la fonction *database* permettant de remplir la base de données.
 
 Le fichier *stats.py* regroupe toutes les fonctions permettant de récupérer des informations, de réaliser des graphiques et des statistiques sur un joueur en envoyant des requêtes à la base de données. 
 
 La démarche est la suivante. 
 Il faut d'abord remplir la base de données avec tous les tournois qui ont été joué jusqu'à présent. On se rend sur le fichier *data_build.py*, on crée le fichier au format .db, et on lance la fonction database, qui fait une boucle sur les numéros des tournois sur le site. Le premier tournoi répertorié a un id 18324, et le dernier est vers les 55 000. Pour s'assurer de tous les parcourir, et comme ils ne sont pas exactement classés par ordre chronologique, on met une borne finale de 60 000. On enregistre bien la base de données créée.
+
+
+NB : Comme remplir la base de données est coûteux en temps, nous avons décidé de faire tourner le remplissage sur plusieurs ordinateurs différents. Le fichier *merge.py* permet donc de fusionner toutes ces petites bases de données pour former la grande base de données. 
 
 
 Ensuite on va dans le fichier *main.py*. On se connecte au fichier de la base de données, qu'on commence par updater à aujourd'hui. Puis on peut faire des tests sur un joueur dont on tape le nom + prénom tout en minuscule. Dans le fichier actuellement les tests ont été faits avec "herve daurelle" qui a participé à beaucoup de tournois sur plusieurs années. On peut ainsi connaître des informations sur l'évolution de la participation, des elos, et des victoires du joueur. 

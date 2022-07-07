@@ -115,12 +115,18 @@ def elo_evolution(con, joueur):
     for row in list(con.execute("select tournoi,elo_black from match where black_player =?", (id_joueur,))):
         if not row[0] in tournoi:
             tournoi.append(row[0])
-            elo.append(int(row[1][:-1]))
+            if type(row[1])== int:
+                elo.append(row[1])
+            else :
+                elo.append(int(row[1][:-1]))
             
     for row in list(con.execute("select tournoi,elo_white from match where white_player =?", (id_joueur,))):
         if not row[0] in tournoi:
             tournoi.append(row[0])
-            elo.append(int(row[1][:-1]))
+            if type(row[1])== int:
+                elo.append(row[1])
+            else :
+                elo.append(int(row[1][:-1]))
 
     plt.plot(tournoi, elo)
     plt.title("Evolution du elo de " + joueur + " en fonction des tournois")

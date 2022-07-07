@@ -22,7 +22,7 @@ def american(number):
     
     
     link = f"http://echecs.asso.fr/Resultats.aspx?URL=Tournois/Id/{number}/{number}&Action=Ga"
-    soup = BeautifulSoup(requests.get(link).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(link).text, 'lxml')
     
     for x in soup.find_all('span'):
         if x.string == "Désolé, le fichier n'existe pas...":
@@ -51,7 +51,7 @@ def infos_tournoi(number):
     
     infos = dict()
     link_infos = f"http://echecs.asso.fr/FicheTournoi.aspx?Ref={number}"
-    soup_infos = BeautifulSoup(requests.get(link_infos).text, 'html.parser')
+    soup_infos = BeautifulSoup(requests.get(link_infos).text, 'lxml')
     
     for x in soup_infos.find_all('span'):
         if x.has_attr("id") and x['id'] == "ctl00_ContentPlaceHolderMain_LabelDates":
@@ -182,6 +182,60 @@ def date_debut(date):
     return (jour_debut, mois_debut, liste_date[2], annee_debut)
 
 
+def color_berger(number):
+    
+    
+    '''
+    Retourne un dictionnaire recensant les couleurs que chaque joueur a joué dans un match pendant un tournoi berger.
+
+            Paramètres:
+                    number (int): Un entier représentant le numéro du tournoi dans le site
+            
+            Retourne:
+                    dictionnaire (dict) : dictionnaire avec les clés de type 'joueur1 joueur2', ayant pour valeur un autre dictionnaire ayant seulement 2 clés, 'joueur1' et 'joueur2', chacune affectée d'une valeur 'blanc', ou 'noir'
+                        
+    '''
+    
+    link = f"http://www.echecs.asso.fr/Resultats.aspx?URL=Tournois/Id/{number}/{number}&Action=Pairing"
+    soup = BeautifulSoup(requests.get(link).text, 'html.parser')
+    dic=dict()
+    left_player=[]
+    right_player=[]
+    k=2
+    for x in soup.find_all('td'):
+        if x.has_attr("class") and x['class'][0] == "papi_c" :
+            k+=1
+            if k%3==0:
+                left_player.append(x.string)
+            elif k%3==2:
+                right_player.append(x.string)
+
+    for j in range(len(left_player)):
+        ch=left_player[j]+' '+right_player[j]
+        dic[ch]=dict()
+        dic[ch][left_player[j]]='blanc'
+        dic[ch][right_player[j]]='noir'
+        
+        
+    return(dic)
+
+
+def find_key(v,dic): 
+    '''
+    Retourne le nom de la clé correspondant à une certaine valeur dans un dictionnaire
+
+            Paramètres:
+                  v(string): chaîne de caractère correspondant à une certaine valeur d'une clé dans un dictionnaire
+
+            Retourne:
+                    clé(string): la clé correspondant à une valeur donnée en argument
+    '''
+    for k, val in dic.items(): 
+        if v == val: 
+            return k 
+    return "Clé n'existe pas"
+
+
 def recup_berger(number):
     
     '''
@@ -207,6 +261,7 @@ def recup_berger(number):
             j.append(x.string.lower())
     joueur=j[1:]
     
+   
     #trouver taille du tableau:a
     for k,x in enumerate(soup.find_all('tr')):
         if x.has_attr("class") and x['class'][0] == "papi_liste_c":
@@ -214,48 +269,80 @@ def recup_berger(number):
                 a=0
                 for y in x.find_all('td'):
                     a+=1
-    
-    
     #récupération des elo
     e=[]
     i=0
     for x in soup.find_all('tr'):
         if x.has_attr("class") and x['class'][0] == "papi_liste_c":
             for k,y in enumerate(x.find_all('td')):
-                if (k-3)%a==0 and k!=1 and i<len(joueur)+1:
-                    z=str(y.string).split("\xa0")
-                    if len(z)==2:
-                        elo = z[0]+z[1]
-                    else :
-                        elo = z[0]
-                    e.append(elo)
+                if (k-3)% a==0 and i<len(joueur)+1:
+                    e.append(y.string)
                     i+=1
     elo=dict()
     for i in range(len(joueur)):
         elo[joueur[i]]=e[1:][i]
     
-    
     #récupération des scores relatifs sous forme de dictionnaire
     dic=dict()
+    dictionnaire=dict()
+    L=['1','0','½']
+    
+    indicateur=0
+    
     for i in range(len(joueur)):
         p=[]
         for x in soup.find_all('tr'):
             if x.has_attr("class") and x['class'][0] == "papi_liste_c":
                 for k,y in enumerate(x.find_all('td')):
-                    if (k-4-i)%a==0:
+                    if y.string==None:#si vide, on est dans le cas 2 et on sort de la boucle
+                            indicateur=1
+                            break
+                    elif (k-4-i)%a==0:
                         p.append(y.string)
-        perf_colonne=p[1:len(joueur)+1]
-        dic[joueur[i]]=perf_colonne
+                        
+                        
+         
+        if indicateur==0:
+            #cas 1 des grilles berger
+            
+            perf_colonne=p[1:len(joueur)+1]
+            dic[joueur[i]]=perf_colonne
         #avant on a récupéré tous les modulos 15, ie on a les scores en colonne, on doit les présenter en ligne   
-    
-    dictionnaire=dict()
-    for i in range(len(joueur)):
-        dico_joueur=dictionnaire[joueur[i]]= dict()
-        for j in range(len(joueur)):
-            if j!=i:
-                dico_joueur[joueur[j]]=dic[joueur[j]][i]
-    
-    return(joueur,elo,dictionnaire)       
+            for i in range(len(joueur)):
+                dico_joueur=dictionnaire[joueur[i]]= dict()
+                for j in range(len(joueur)):
+                    if j!=i:
+                        dico_joueur[joueur[j]]=dic[joueur[j]][i]
+                   
+        if indicateur==1:#cas 2 des grilles berger
+            k=0
+            init=0
+            marqueur=0
+            for x in soup.find_all('td'):
+                if x.has_attr("class") and x['class'][0] == "papi_border_c":
+                    k+=1
+                    if k>a-2:
+                        counter=k-(a-1)
+                        ligne=int(counter/(a-4))
+                        if init==0:
+                            dico_joueur=dictionnaire[joueur[ligne]]=dict()
+                            marqueur=ligne
+                            init=1
+                                
+                        else:
+                            if ligne==marqueur:
+                                colonne=(counter%(a-4)-1)
+                                if x.string!=None and colonne<len(joueur)and (x.string in L) and colonne>0:
+                                    #print(colonne)
+                                    #print(ligne)
+                                    dico_joueur[joueur[colonne]]=x.string
+                            else:
+                                init=0
+                                dico_joueur=dictionnaire[joueur[ligne]]=dict()
+                                marqueur=ligne
+                                init=1
+                
+    return(joueur, elo, dictionnaire)       
 
 
 def players_ga(number):
@@ -275,7 +362,7 @@ def players_ga(number):
     indicateur = 0
     res = []
     link = f"http://echecs.asso.fr/Resultats.aspx?URL=Tournois/Id/{number}/{number}&Action=Ga"
-    soup = BeautifulSoup(requests.get(link).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(link).text, 'lxml')
     for x in soup.find_all('div'):
         if x.has_attr("class") and x['class'][0] == "papi_joueur_box":
             res.append(x.b.string)
@@ -350,7 +437,7 @@ def match_ga(number):
     symboles = ['+', '-', "=", ">", "<"]
     players, ind = players_ga(number)
     link = f"http://echecs.asso.fr/Resultats.aspx?URL=Tournois/Id/{number}/{number}&Action=Ga"
-    soup = BeautifulSoup(requests.get(link).text, 'html.parser')
+    soup = BeautifulSoup(requests.get(link).text, 'lxml')
     
     res = []
 
@@ -463,33 +550,38 @@ def insertion_berger(number, con):
     '''
     
     
-    #insertion des joueurs dans la table player
-    for player in recup_berger(number)[0]:
+    #insertion des joueurs du tournoi
+    berger_data = recup_berger(number)
+    
+    for player in berger_data[0]:
         recherche = list(con.execute("select name from player where name = ?", (player.lower(),)))
         if player not in recherche:
             con.execute("insert into player(name) values (?)",(player.lower(),))
-    
-    
-    
-    #insertion du tournoi dans la table tournois 
+    #insertion dans la table tournois 
     if "cadence" in infos_tournoi(number):
-        con.execute("insert or replace into tournois(id, name, date, rondes, cadence, type) values(?,?,?,?,?, ?)",(number, infos_tournoi(number)["nom"],infos_tournoi(number)["date"],infos_tournoi(number)["nb_rondes"],infos_tournoi(number)['cadence'], "berger",))   
+        con.execute("insert or replace into tournois(id, name, date, rondes, cadence) values(?,?,?,?,?)",(number, infos_tournoi(number)["nom"],infos_tournoi(number)["date"],infos_tournoi(number)["nb_rondes"],infos_tournoi(number)['cadence'], ))   
     else :
-        con.execute("insert or replace into tournois(id, name, date, rondes, cadence, type) values(?,?,?,?,?,?)",(number, infos_tournoi(number)["nom"],infos_tournoi(number)["date"],infos_tournoi(number)["nb_rondes"],"aucun", "berger", ))
+        con.execute("insert or replace into tournois(id, name, date, rondes, cadence) values(?,?,?,?,?)",(number, infos_tournoi(number)["nom"],infos_tournoi(number)["date"],infos_tournoi(number)["nb_rondes"],"aucun", ))
     
-    
-    
-    #insertion des matchs dans la table match
+    #insertion des matchs d'un tournoi
     i=0
-    for player in recup_berger(number)[0]:
-        dicomatch=recup_berger(number)[2]
+    for player in berger_data[0]:
+        dicomatch=berger_data[2]
         dicojoueur=dicomatch[player]
         joueurrestant=list(dicojoueur.keys())[i:]
         for adversaire in joueurrestant:
-            black_id = list(con.execute("select id from player where name = ?", (player.lower(),)))[0][0]
-            white_id = list(con.execute("select id from player where name = ?", (adversaire.lower(),)))[0][0]
-            elo_black=recup_berger(number)[1][player]
-            elo_white=recup_berger(number)[1][adversaire]
+            
+            couleur=color_berger(number)
+            for couple in color_berger.keys():
+                if adversaire in couple and player in couple:
+                    white_player=find_key('blanc',color_berger(number)[couple])
+                    black_player=find_key('noir',color_berger(number)[couple])
+            
+            black_id = list(con.execute("select id from player where name = ?", (black_player.lower(),)))[0][0]
+            white_id = list(con.execute("select id from player where name = ?", (white_player.lower(),)))[0][0]
+            elo_black=berger_data[1][black_player]
+            elo_white=berger_data[1][white_adversaire]
+            
             if dicojoueur[adversaire]=='1':
                 winner=0
             if dicojoueur[adversaire]=='0':
