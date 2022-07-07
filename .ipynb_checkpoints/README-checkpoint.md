@@ -83,6 +83,8 @@ NB : Comme remplir la base de données est coûteux en temps, nous avons décid�
 
 
 Ensuite on va dans le fichier *main.py*. On se connecte au fichier de la base de données, qu'on commence par updater à aujourd'hui. Puis on peut faire des tests sur un joueur dont on tape le nom + prénom tout en minuscule. Dans le fichier actuellement les tests ont été faits avec "herve daurelle" qui a participé à beaucoup de tournois sur plusieurs années. On peut ainsi connaître des informations sur l'évolution de la participation, des elos, et des victoires du joueur. 
+
+Pour l'interface utilisateur, on utilise les fichiers *node_modules*, *views*, *exe.py*, *server.js*, *data.json*, *output.json*, *package.json*, *package-lock.json*. L'utilisateur envoie une requête au serveur javascript, qui l'envoie au fichier *exe.py* grâce à *data.json*. Puis la fonction python envoie une requête SQL à la database, et renvoie une liste de tournois par l'intermédiaire de *output.json*. Cette liste est affichée ensuite dans la page html à l'aide de javascript.
 <!-- #endregion -->
 
 ```python

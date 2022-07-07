@@ -226,7 +226,7 @@ def find_key(v,dic):
 
             Paramètres:
                   v(string): chaîne de caractère correspondant à une certaine valeur d'une clé dans un dictionnaire
-
+                dic(dict):le dictionnaire en question
             Retourne:
                     clé(string): la clé correspondant à une valeur donnée en argument
     '''
@@ -564,23 +564,23 @@ def insertion_berger(number, con):
         con.execute("insert or replace into tournois(id, name, date, rondes, cadence) values(?,?,?,?,?)",(number, infos_tournoi(number)["nom"],infos_tournoi(number)["date"],infos_tournoi(number)["nb_rondes"],"aucun", ))
     
     #insertion des matchs d'un tournoi
-    i=0
+    i = 0
     for player in berger_data[0]:
-        dicomatch=berger_data[2]
-        dicojoueur=dicomatch[player]
-        joueurrestant=list(dicojoueur.keys())[i:]
+        dicomatch = berger_data[2]
+        dicojoueur = dicomatch[player]
+        joueurrestant = list(dicojoueur.keys())[i:]
         for adversaire in joueurrestant:
             
             couleur=color_berger(number)
-            for couple in color_berger.keys():
-                if adversaire in couple and player in couple:
-                    white_player=find_key('blanc',color_berger(number)[couple])
-                    black_player=find_key('noir',color_berger(number)[couple])
+            for couple in couleur.keys():
+                if adversaire in couple.lower() and player in couple.lower():
+                    white_player=find_key('blanc',couleur[couple])
+                    black_player=find_key('noir',couleur[couple])
             
             black_id = list(con.execute("select id from player where name = ?", (black_player.lower(),)))[0][0]
             white_id = list(con.execute("select id from player where name = ?", (white_player.lower(),)))[0][0]
-            elo_black=berger_data[1][black_player]
-            elo_white=berger_data[1][white_adversaire]
+            elo_black = berger_data[1][black_player.lower()]
+            elo_white = berger_data[1][white_player.lower()]
             
             if dicojoueur[adversaire]=='1':
                 winner=0
